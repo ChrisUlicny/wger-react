@@ -24,7 +24,7 @@ describe("test date utility", () => {
 
 
 
-describe('calculatePastDate', () => {
+describe('calculatePastDate tests', () => {
 
     it('should return undefined for empty string filter', () => {
         expect(calculatePastDate('', new Date('2023-08-14'))).toBeUndefined();

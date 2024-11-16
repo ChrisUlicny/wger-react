@@ -11,13 +11,28 @@ import { Muscle } from "components/Exercises/models/muscle";
 import { ExerciseGrid } from "components/Exercises/Overview/ExerciseGrid";
 import { ExerciseGridSkeleton } from "components/Exercises/Overview/ExerciseGridLoadingSkeleton";
 import { useExercisesQuery } from "components/Exercises/queries";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { ExerciseSearchResponse } from "services/responseType";
 import { makeLink, WgerLink } from "utils/url";
 import { ExerciseFiltersContext } from './Filter/ExerciseFiltersContext';
 import { FilterDrawer } from './Filter/FilterDrawer';
+import { useInView } from "react-intersection-observer";
+import { LoadingPlaceholder } from "components/Core/LoadingWidget/LoadingWidget";
+
+// Lazy load MuscleFilter and MuscleFilterDropdown
+const LazyMuscleFilter = lazy(() =>
+    import("components/Exercises/Filter/MuscleFilter").then((module) => ({
+        default: module.MuscleFilter,
+    }))
+);
+const LazyMuscleFilterDropdown = lazy(() =>
+    import("components/Exercises/Filter/MuscleFilter").then((module) => ({
+        default: module.MuscleFilterDropdown,
+    }))
+);
+
 
 const ContributeExerciseBanner = () => {
     const [t, i18n] = useTranslation();
@@ -77,6 +92,17 @@ export const ExerciseOverviewList = () => {
     const navigate = useNavigate();
     const { selectedCategories, selectedEquipment, selectedMuscles } = useContext(ExerciseFiltersContext);
     const isMobile = useMediaQuery('(max-width:600px)');
+
+    // `useInView` to determine when the MuscleFilter is visible
+    const { ref: muscleFilterRef, inView: isMuscleFilterInView } = useInView({
+        triggerOnce: true, 
+        threshold: 0.1,    
+    });
+
+    const { ref: muscleDropdownRef, inView: isMuscleDropdownInView } = useInView({
+        triggerOnce: true, 
+        threshold: 0.1,    
+    });
 
     const [page, setPage] = React.useState(1);
     const handlePageChange = (event: any, value: number) => {
@@ -181,7 +207,16 @@ export const ExerciseOverviewList = () => {
                             <FilterDrawer>
                                 <CategoryFilterDropdown />
                                 <EquipmentFilterDropdown />
-                                <MuscleFilterDropdown />
+                                <div ref={muscleDropdownRef}>
+                                    {isMuscleDropdownInView ? (
+                                        <Suspense fallback={<LoadingPlaceholder />}>
+                                            <LazyMuscleFilterDropdown />
+                                        </Suspense>
+                                    ) : (
+                                        <LoadingPlaceholder />
+                                    )}
+                                </div>
+                                {/* <MuscleFilterDropdown/> */}
                             </FilterDrawer>
                         </Grid>
                     </>
@@ -234,7 +269,16 @@ export const ExerciseOverviewList = () => {
                             </Grid>
 
                             <Grid size={12}>
-                                <MuscleFilter />
+                            <div ref={muscleFilterRef}>
+                                    {isMuscleFilterInView ? (
+                                        <Suspense fallback={<LoadingPlaceholder />}>
+                                            <LazyMuscleFilter />
+                                        </Suspense>
+                                    ) : (
+                                        <LoadingPlaceholder />
+                                    )}
+                                </div>
+                                {/* <MuscleFilter/> */}
                             </Grid>
                         </Grid>
                     </Grid>
