@@ -14,7 +14,7 @@ type ExerciseGridProps = {
 export const ExerciseGrid = ({ exercises }: ExerciseGridProps) => {
 
     const languageQuery = useLanguageQuery();
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [t, i18n] = useTranslation();
     
@@ -26,7 +26,7 @@ export const ExerciseGrid = ({ exercises }: ExerciseGridProps) => {
     const cardHeight = 250; 
 
     const Row = ({ columnIndex, rowIndex, style }: any) => {
-        const exerciseIndex = rowIndex * 3 + columnIndex; /
+        const exerciseIndex = rowIndex * 3 + columnIndex; 
         const exercise = exercises[exerciseIndex];
 
         if (!exercise) return null;
